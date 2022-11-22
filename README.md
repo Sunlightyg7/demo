@@ -1,2 +1,2 @@
 # demo
-Thera are some tool demo.
+There are some tool demo.
