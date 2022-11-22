@@ -218,6 +218,9 @@ void ExtractText(PdfMemDocument* pDocument, PdfPage* pPage)
 								}
 								std::cout << res;
 								int a = 0;
+								int a = 0;
+								int a = 0;
+								int a = 0;
 							}
 						}
 
