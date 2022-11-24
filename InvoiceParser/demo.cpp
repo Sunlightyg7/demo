@@ -22,10 +22,8 @@ using std::make_pair;
 
 void ExtractText(PdfMemDocument* pDocument, PdfPage* pPage);
 void InitInvoiceCoordinates_1();
-string UnicodeToString(const string& UnicodeString);
 string WstringToString(wstring wstr);
 void HandleCommodityInformation(map<string, map<double, string>>& map);
-
 
 Document document;
 
@@ -42,7 +40,7 @@ int main(int argc, char* argv[])
 	Pointer("/content/kpxx/0/xh").Set(document, 1);
 
 	try {
-		const char* filename = argv[1]; 
+		const char* filename = argv[1];
 
 		try {
 			PdfMemDocument document(filename);
@@ -174,7 +172,7 @@ void ExtractText(PdfMemDocument* pDocument, PdfPage* pPage)
 					stack.pop();
 				}
 				else if (strcmp(pszToken, "Tj") == 0 ||
-						 strcmp(pszToken, "'") == 0)
+					strcmp(pszToken, "'") == 0)
 				{
 					if (stack.size() < 1)
 					{
@@ -188,45 +186,46 @@ void ExtractText(PdfMemDocument* pDocument, PdfPage* pPage)
 
 					if (!pdfstr.IsHex()) // 排除发票数据的标题
 					{
+						string DataString;
+
+						// 1.判断有无 toUnicode 表
 						if (pCurFont)
 						{
-							const PdfEncoding* encoding = pCurFont->GetEncoding();
-							auto& table = encoding->m_toUnicode;
-							// 1.str to int_10
-							// 2.search int_10 get Unicode_code_10
-							// 3.Unicode_code_10 to str_16
-							// 4.str_16 to Unicode
+							const PdfEncoding* pEncoding = pCurFont->GetEncoding();
+							PdfString UnicodeCodeString;
 
-							// 这里没有读取数字，所以数字不会显示
-							if (!table.empty())
+							// 判断数据是否为数字，若否则转为Unicode
+							if (pCurFont->m_bWasEmbedded)
 							{
-								// 每4个截断一次
-								string res;
-								for (unsigned n = 0; n < tokenizer.m_DataString.size(); n += 4)
+								// 若有ToUnicode表，则获取所映射到的Unicode
+								if (pEncoding->m_bToUnicodeIsLoaded)
 								{
-									string substr = tokenizer.m_DataString.substr(n, 4);
-									unsigned int_10 = std::stoi(substr, nullptr, 16);
-									auto iter = table.find(int_10);
-									if (table.end() != iter)
-									{
-										pdf_utf16be res_10 = iter->second;
-										char str_16[8] = "";
-										_itoa_s(res_10, str_16, 16);
-										string unicode = UnicodeToString(str_16);
-										res.append(unicode);
-									}
+									PdfString UnicodeCode = pEncoding->ConvertToUnicode(pdfstr.GetUnicode(), pCurFont);
+									UnicodeCodeString = UnicodeCode.GetUnicode();
 								}
-								std::cout << res;
-								int a = 0;
-								int a = 0;
-								int a = 0;
-								int a = 0;
+								else
+									UnicodeCodeString = pdfstr.GetUnicode();
+
+								const pdf_utf16be* utf16be = UnicodeCodeString.GetUnicode();
+								wstring UnicodeStringW;
+								for (int n = 0; n != pdfstr.GetUnicodeLength(); ++n)
+								{
+									wchar_t UnicodeCharW;
+									// 交换low和high字节位置
+									UnicodeCharW = pEncoding->GetCharCode(utf16be[n]);
+									UnicodeStringW.push_back(UnicodeCharW);
+								}
+
+								DataString = WstringToString(UnicodeStringW);
 							}
+							else
+								DataString = pdfstr.GetString();
+							int a = 0;
 						}
 
 						// 商品区域 X：30-590	Y：138-224
-						if ((30  <= dCurPosX && dCurPosX <= 590) &&
-							 138 <= dCurPosY && dCurPosY <= 224)
+						if ((30 <= dCurPosX && dCurPosX <= 590) &&
+							138 <= dCurPosY && dCurPosY <= 224)
 							IsCommodity = true;
 
 						for (auto& AreaData : mapCoordinates)
@@ -253,11 +252,11 @@ void ExtractText(PdfMemDocument* pDocument, PdfPage* pPage)
 										string DataValue;
 
 										// 判断是否是Unicode编码
-										if(0 == DataCoor[4])
-											DataValue = pdfstr.GetString();
+										if (0 == DataCoor[4])
+											DataValue = DataString;
 										else if (1 == DataCoor[4])
 										{
-											DataValue = UnicodeToString(tokenizer.m_DataString);
+											DataValue = DataString;
 											// 去除字符串里解码错误的问号
 											for (size_t pos = DataValue.find('?'); pos != string::npos;)
 											{
@@ -271,7 +270,7 @@ void ExtractText(PdfMemDocument* pDocument, PdfPage* pPage)
 											if (DateIndex % 2 == 0)
 												DataValue = pdfstr.GetString();
 											else
-												DataValue = UnicodeToString(tokenizer.m_DataString);
+												DataValue = DataString;
 											++DateIndex;
 										}
 
@@ -280,10 +279,10 @@ void ExtractText(PdfMemDocument* pDocument, PdfPage* pPage)
 										{
 											// map<string, map<double, string>> mapCommodityInfo; // DataName - (Y Pos - info)
 											map<double, string> mapTemp{ make_pair(dCurPosY, DataValue) };
-
 											auto iter = mapCommodityInfo.find(DataName);
+
 											// 若已添加商品名称的Key，则添加信息到iter->second，否则insert会被忽略
-											if(mapCommodityInfo.end() == iter)
+											if (mapCommodityInfo.end() == iter)
 												mapCommodityInfo.insert(make_pair(DataName, mapTemp));
 											else
 											{
@@ -363,22 +362,6 @@ void HandleCommodityInformation(map<string, map<double, string>>& map)
 	}
 }
 
-// 每4个字符组成一个十六进制数，并转换为Unicode编码的中文
-string UnicodeToString(const string& UnicodeString)
-{
-	wstring invoice_data;
-
-	for (unsigned n = 0; n < UnicodeString.size(); n += 4)
-	{
-		string unicode_num_16 = UnicodeString.substr(n, 4);
-		char* end;
-		int unicode_num_10 = strtol(unicode_num_16.c_str(), &end, 16);
-		invoice_data.push_back((wchar_t)unicode_num_10);
-	}
-
-	return WstringToString(invoice_data);
-}
-
 string WstringToString(wstring wstr)
 {
 	// support chinese
@@ -405,7 +388,7 @@ void InitInvoiceCoordinates_1()
 	vector<unsigned> vecAreaCoor;
 	map<string, vector<unsigned>> mapData;
 	vector<unsigned> vecDataCoor; // 最后一位用来判断是否是Unicode编码，1为是，0为否，2为开票日期特殊处理
-	
+
 	// *********************发票信息初始化*********************
 	// 区域初始化	X：485-546	Y：307-359
 	vecAreaCoor.push_back(485);
@@ -446,7 +429,7 @@ void InitInvoiceCoordinates_1()
 	vecDataCoor.push_back(492);
 	vecDataCoor.push_back(307);
 	vecDataCoor.push_back(314);
-	vecDataCoor.push_back(0); 
+	vecDataCoor.push_back(0);
 	mapData.insert(make_pair("jym", vecDataCoor));
 	vecDataCoor.clear();
 

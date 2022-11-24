@@ -77,9 +77,7 @@ const PdfEncoding *PdfEncodingObjectFactory::CreateEncoding (PdfObject *pObject,
         else if (rName == PdfName ("Identity-H"))
             return new PdfIdentityEncoding (0, 0xffff, true, pToUnicode);
         else
-            return PdfEncodingFactory::GlobalWinAnsiEncodingInstance();
-
-        //    return PdfEncodingFactory::GlobalIdentityEncodingInstance();
+            return PdfEncodingFactory::GlobalIdentityEncodingInstance();
     }
   	else if (pObject->HasStream ())
     {

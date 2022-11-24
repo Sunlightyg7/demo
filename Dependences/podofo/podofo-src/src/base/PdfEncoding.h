@@ -220,7 +220,7 @@ class PODOFO_API PdfEncoding {
      */
     virtual pdf_utf16be GetCharCode( int nIndex ) const = 0;
 
- protected:
+ public:
     bool m_bToUnicodeIsLoaded;  ///< If true, ToUnicode has been parse
                              
  private:

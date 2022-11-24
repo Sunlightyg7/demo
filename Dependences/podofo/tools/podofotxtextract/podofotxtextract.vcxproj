@@ -270,12 +270,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\75700\source\repos\QT\Dependences\podofo\podofo-src;C:\Users\75700\source\repos\QT\Dependences\podofo;C:\Users\75700\source\repos\QT\Dependences\podofo\podofo-src\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\75700\source\repos\demo\Dependences\rapidjson\include;C:\Users\75700\source\repos\demo\Dependences\podofo\podofo-src;C:\Users\75700\source\repos\demo\Dependences\podofo;C:\Users\75700\source\repos\demo\Dependences\podofo\podofo-src\src</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Users\75700\source\repos\QT\Dependences\freetype-2.12.1\objs;C:\Users\75700\source\repos\QT\Dependences\zlib-1.2.13\contrib\vstudio\vc12\x86\ZlibDllDebug;C:\Users\75700\source\repos\QT\Dependences\jpeg-9e;C:\Users\75700\source\repos\QT\Dependences\podofo\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libjpeg.lib;freetype.lib;zlibwapi.lib;ws2_32.lib;podofo_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\75700\source\repos\demo\Dependences\freetype-2.12.1\objs;C:\Users\75700\source\repos\demo\Dependences\zlib-1.2.13\contrib\vstudio\vc12\x86\ZlibDllDebug;C:\Users\75700\source\repos\demo\Dependences\jpeg-9e;C:\Users\75700\source\repos\demo\Dependences\podofo\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype.lib;libjpeg.lib;zlibwapi.lib;ws2_32.lib;podofo_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>

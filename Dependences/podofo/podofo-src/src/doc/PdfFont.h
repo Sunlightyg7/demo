@@ -240,6 +240,7 @@ class PODOFO_DOC_API PdfFont : public PdfElement {
     inline bool IsSubsetting() const;
 
     inline const PdfName& GetBaseFont() const;
+    bool  m_bWasEmbedded;
  protected:
     /** Get the base font name of this font
      *
@@ -257,7 +258,6 @@ class PODOFO_DOC_API PdfFont : public PdfElement {
     bool  m_bUnderlined;
     bool  m_bStrikedOut;
 
-    bool  m_bWasEmbedded;
     bool m_isBase14;
     bool m_bIsSubsetting;
     PdfName m_Identifier;
